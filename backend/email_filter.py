@@ -43,7 +43,7 @@ def filter_emails(emails):
 
 
 
-def is_job_related_email(words):
+def uses_job_keywords(words):
     job_reserved_keywords = {'job','offer','recruiter','recruit','applying','recruiting','position','talent','resume','role','selected'}
     for word in words:
         if word in job_reserved_keywords:

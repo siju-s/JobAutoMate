@@ -8,14 +8,16 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
+from service import extract_job_data_from_text
+
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.modify']
 BASE_DIR = 'credentials/'
-companies = list
+companies = []
 
 def readEmails():
     """Shows basic usage of the Gmail API.
-    Lists the user's Gmail labels.
     """
+    textData = []
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -34,73 +36,74 @@ def readEmails():
         # Save the credentials for the next run
         with open(BASE_DIR + 'token.json', 'w') as token:
             token.write(creds.to_json())
-    try:
-        for company in companies:
-            # TODO: make this companies optional
-            # Call the Gmail API
-            service = build('gmail', 'v1', credentials=creds)
-            name = f"{company}"
-            results = service.users().messages().list(userId='me', labelIds=['INBOX'], q=f"from:{name}").execute()
-            messages = results.get('messages', [])
-            print ("Count of Messages from ", name , " is ", len(messages))
-            if not messages:
-                print('No new messages.')
-            else:
-                for message in messages:
-                    msg = service.users().messages().get(userId='me', id=message['id']).execute()
-                    email_data = msg['payload']['headers']
-                    for values in email_data:
-                        name = values['name']
-                        if name == 'From':
-                            from_name = values['value']
-                            # if is_not_job_email(from_name):
-                            #     continue
-                            payload = msg['payload']
-                            parts = payload.get('parts')
+    for company in companies:
+        # TODO: make this companies optional
+        # Call the Gmail API
+        service = build('gmail', 'v1', credentials=creds)
+        name = f"{company}"
+        results = service.users().messages().list(userId='me', maxResults=3,labelIds=['INBOX']).execute()
+        messages = results.get('messages', [])
+        print ("Count of Messages from ", name , " is ", len(messages))
+        if not messages:
+            print('No new messages.')
+            return []
+        else:
+            for message in messages:
+                msg = service.users().messages().get(userId='me', id=message['id'], ).execute()
+                email_data = msg['payload']['headers']
+                for values in email_data:
+                    name = values['name']
+                    if name == 'From':
+                        from_name = values['value']
+                        # if is_not_job_email(from_name):
+                        #     continue
+                        payload = msg['payload']
+                        parts = payload.get('parts')
 
-                            if parts is None:
-                                body = payload.get("body")
+                        if parts is None:
+                            body = payload.get("body")
+                            data = body.get("data")
+                            byte_code = base64.urlsafe_b64decode(data)
+
+                            text = byte_code.decode("utf-8")
+                            text = format_text(text)
+                            textData.append(text)
+
+                            print("MESSAGE: " + text)
+                            continue
+
+                        for part in parts:
+                            try:
+                                body = part.get("body")
                                 data = body.get("data")
-                                byte_code = base64.urlsafe_b64decode(data)
+                                mimeType = part.get("mimeType")
+                                # with attachment
+                                if mimeType == 'multipart/alternative':
+                                    subparts = part.get('parts')
+                                    for p in subparts:
+                                        body = p.get("body")
+                                        data = body.get("data")
+                                        mimeType = p.get("mimeType")
+                                        if mimeType == 'text/plain':
+                                            byte_code = base64.urlsafe_b64decode(data)
+                                            break
+                                        elif mimeType == 'text/html':
+                                            byte_code = base64.urlsafe_b64decode(data)
+                                            break
+                                    # without attachment
+                                elif mimeType == 'text/plain':
+                                    byte_code = base64.urlsafe_b64decode(data)
+                                else:
+                                    continue
 
                                 text = byte_code.decode("utf-8")
                                 text = format_text(text)
-                                print("MESSAGE: " + text)
-                                continue
-
-                            for part in parts:
-                                try:
-                                    body = part.get("body")
-                                    data = body.get("data")
-                                    mimeType = part.get("mimeType")
-                                    # with attachment
-                                    if mimeType == 'multipart/alternative':
-                                        subparts = part.get('parts')
-                                        for p in subparts:
-                                            body = p.get("body")
-                                            data = body.get("data")
-                                            mimeType = p.get("mimeType")
-                                            if mimeType == 'text/plain':
-                                                byte_code = base64.urlsafe_b64decode(data)
-                                                break
-                                            elif mimeType == 'text/html':
-                                                byte_code = base64.urlsafe_b64decode(data)
-                                                break
-                                        # without attachment
-                                    elif mimeType == 'text/plain':
-                                        byte_code = base64.urlsafe_b64decode(data)
-                                    else:
-                                        continue
-
-                                    text = byte_code.decode("utf-8")
-                                    text = format_text(text)
-                                    print("This is the message: " + text)
-                                except BaseException as error:
-                                    print(error)
-                                    pass
-    except Exception as error:
-        print(f'An error occurred: {error}')
-
+                                textData.append(text)
+                                print("This is the message: " + text)
+                            except BaseException as error:
+                                print(error)
+                                pass
+    return extract_job_data_from_text(textData)
 
 def is_not_job_email(mail_from):
     for company in companies:
