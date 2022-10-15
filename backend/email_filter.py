@@ -36,6 +36,7 @@ def filter_emails(emails):
         words = email.split(' ')
         if not is_job_related_email(words):
             print('Skipping...',words[:7])
+            # TODO: log file
             print('---------')
             continue
         print(predict_rejection(email))
@@ -51,5 +52,4 @@ def is_job_related_email(words):
 
 nltk.download('stopwords')
 x = 'Congratulations you have been selected for this position!'
-x = 'I am sorry but you are not selected'
 filter_emails([x])
