@@ -13,6 +13,7 @@ from service import extract_job_data_from_text
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.modify']
 JOB_KEYWORDS=['workday', 'codesignal', 'recruiting', 'applying', 'online assessment', 'interview']
+ROLES=['Software Developer', 'Software Developer Intern', 'Software Development Engineer', 'Data Science Intern', 'Software Engineering']
 BASE_DIR = 'credentials/'
 companies = []
 queries = list()
@@ -43,7 +44,7 @@ def readEmails():
             # Call the Gmail API
             service = build('gmail', 'v1', credentials=creds)
             print(query)
-            results = service.users().messages().list(userId='me', labelIds=['INBOX'], q=query, maxResults=10).execute()
+            results = service.users().messages().list(userId='me', labelIds=['INBOX'], q=query, maxResults=1).execute()
             messages = results.get('messages', [])
             print ("Count of Messages for query ", query , " is ", len(messages))
             if not messages:
@@ -73,7 +74,8 @@ def readEmails():
                                 text = byte_code.decode("utf-8")
                                 text = format_text(text)
                                 jobDatum['text'] = text
-                                print("MESSAGE: " + text)
+                                jobDatum['role'] = get_role(text)
+                                # print("MESSAGE: " + text)
                                 continue
 
                             cumulativeText = ''
@@ -105,7 +107,8 @@ def readEmails():
                                     text = byte_code.decode("utf-8")
                                     text = format_text(text)
                                     cumulativeText += text
-                                    print("This is the message: " + text + "\n\n\n")
+                                    jobDatum['role'] = get_role(text)
+                                    # print("This is the message: " + text + "\n\n\n")
                                     if cumulativeText != '': jobDatum['text'] = cumulativeText
                                     jobData.append(jobDatum)
                                 except BaseException as error:
@@ -124,6 +127,14 @@ def isOnlineAssessment(text):
 def get_assessment_date(text):
     data = re.split('(\d+)', text)
     print(data)
+
+def get_role(text):
+    for role in ROLES:
+        if role in text:
+            print("Searching for role ", role, "in " ,text)
+            return role
+
+    return "Default role"
 
 def is_not_job_email(mail_from):
     for company in companies:
