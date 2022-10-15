@@ -11,12 +11,15 @@ from googleapiclient.discovery import build
 from service import extract_job_data_from_text
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.modify']
+JOB_KEYWORDS=['workday', 'codesignal', 'recruiting', 'applying', 'online assessment', 'interview']
 BASE_DIR = 'credentials/'
 companies = []
+queries = list()
 
 def readEmails():
     """Shows basic usage of the Gmail API.
     """
+    build_filter_query()
     textData = []
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
@@ -36,45 +39,33 @@ def readEmails():
         # Save the credentials for the next run
         with open(BASE_DIR + 'token.json', 'w') as token:
             token.write(creds.to_json())
-    for company in companies:
-        # TODO: make this companies optional
-        # Call the Gmail API
-        service = build('gmail', 'v1', credentials=creds)
-        name = f"{company}"
-        results = service.users().messages().list(userId='me', maxResults=3,labelIds=['INBOX']).execute()
-        messages = results.get('messages', [])
-        print ("Count of Messages from ", name , " is ", len(messages))
-        if not messages:
-            print('No new messages.')
-            return []
-        else:
-            for message in messages:
-                msg = service.users().messages().get(userId='me', id=message['id'], ).execute()
-                email_data = msg['payload']['headers']
-                for values in email_data:
-                    name = values['name']
-                    if name == 'From':
-                        from_name = values['value']
-                        # if is_not_job_email(from_name):
-                        #     continue
-                        payload = msg['payload']
-                        parts = payload.get('parts')
+    try:
+        for query in queries:
+            # Call the Gmail API
+            service = build('gmail', 'v1', credentials=creds)
+            print(query)
+            results = service.users().messages().list(userId='me', labelIds=['INBOX'], q=query, maxResults=10).execute()
+            messages = results.get('messages', [])
+            print ("Count of Messages for query ", query , " is ", len(messages))
+            if not messages:
+                print('No new messages.')
+            else:
+                for message in messages:
+                    msg = service.users().messages().get(userId='me', id=message['id']).execute()
+                    email_data = msg['payload']['headers']
+                    for values in email_data:
+                        name = values['name']
+                        date = ""
+                        if name == 'Date':
+                            date = values['value']
+                            print("Email date is:", date)
+                        if name == 'From':
+                            from_name = values['value']
+                            payload = msg['payload']
+                            parts = payload.get('parts')
 
-                        if parts is None:
-                            body = payload.get("body")
-                            data = body.get("data")
-                            byte_code = base64.urlsafe_b64decode(data)
-
-                            text = byte_code.decode("utf-8")
-                            text = format_text(text)
-                            textData.append(text)
-
-                            print("MESSAGE: " + text)
-                            continue
-
-                        for part in parts:
-                            try:
-                                body = part.get("body")
+                            if parts is None:
+                                body = payload.get("body")
                                 data = body.get("data")
                                 mimeType = part.get("mimeType")
                                 # with attachment
@@ -99,11 +90,44 @@ def readEmails():
                                 text = byte_code.decode("utf-8")
                                 text = format_text(text)
                                 textData.append(text)
-                                print("This is the message: " + text)
-                            except BaseException as error:
-                                print(error)
-                                pass
-    return extract_job_data_from_text(textData)
+                                print("MESSAGE: " + text)
+                                continue
+
+                            for part in parts:
+                                try:
+                                    body = part.get("body")
+                                    data = body.get("data")
+                                    mimeType = part.get("mimeType")
+                                    # with attachment
+                                    if mimeType == 'multipart/alternative':
+                                        subparts = part.get('parts')
+                                        for p in subparts:
+                                            body = p.get("body")
+                                            data = body.get("data")
+                                            mimeType = p.get("mimeType")
+                                            if mimeType == 'text/plain':
+                                                byte_code = base64.urlsafe_b64decode(data)
+                                                break
+                                            elif mimeType == 'text/html':
+                                                byte_code = base64.urlsafe_b64decode(data)
+                                                break
+                                        # without attachment
+                                    elif mimeType == 'text/plain':
+                                        byte_code = base64.urlsafe_b64decode(data)
+                                    else:
+                                        continue
+
+                                    text = byte_code.decode("utf-8")
+                                    text = format_text(text)
+                                    textData.append(text)
+                                    print("This is the message: " + text + "\n\n\n")
+                                except BaseException as error:
+                                    print(error)
+                                    return []
+    except Exception as error:
+        print(f'An error occurred: {error}')
+    return textData
+
 
 def is_not_job_email(mail_from):
     for company in companies:
@@ -142,7 +166,14 @@ def get_list_of_companies():
     my_file.close()
     return data_into_list
 
+def build_filter_query():
+    companies = get_list_of_companies()
+    for company in companies:
+        query = f"from:{company}"
+        queries.append(query)
+    for keyword in JOB_KEYWORDS:
+        queries.append(keyword)
+
 
 if __name__ == '__main__':
-    companies = get_list_of_companies()
     readEmails()
