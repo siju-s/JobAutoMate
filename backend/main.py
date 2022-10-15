@@ -1,7 +1,3 @@
-# This is a sample Python script.
-
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
 
 import base64
 import os.path
@@ -12,7 +8,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.modify']
-
+BASE_DIR = 'credentials/'
 
 def readEmails():
     """Shows basic usage of the Gmail API.
@@ -22,8 +18,8 @@ def readEmails():
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    if os.path.exists(BASE_DIR + 'token.json'):
+        creds = Credentials.from_authorized_user_file(BASE_DIR + 'token.json', SCOPES)
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
@@ -31,10 +27,10 @@ def readEmails():
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
                 # your creds file here. Please create json file as here https://cloud.google.com/docs/authentication/getting-started
-                'credentials.json', SCOPES)
+                BASE_DIR + 'credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
-        with open('token.json', 'w') as token:
+        with open(BASE_DIR + 'token.json', 'w') as token:
             token.write(creds.to_json())
     try:
         # Call the Gmail API
@@ -78,14 +74,7 @@ def readEmails():
         print(f'An error occurred: {error}')
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
-
-
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     # print_hi('PyCharm')
     readEmails()
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
