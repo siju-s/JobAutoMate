@@ -9,7 +9,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.modify']
-
+BASE_DIR = 'credentials/'
 companies = list
 
 def readEmails():
@@ -36,10 +36,10 @@ def readEmails():
             token.write(creds.to_json())
     try:
         for company in companies:
+            # TODO: make this companies optional
             # Call the Gmail API
             service = build('gmail', 'v1', credentials=creds)
             name = f"{company}"
-            print(name)
             results = service.users().messages().list(userId='me', labelIds=['INBOX'], q=f"from:{name}").execute()
             messages = results.get('messages', [])
             print ("Count of Messages from ", name , " is ", len(messages))
