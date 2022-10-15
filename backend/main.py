@@ -9,8 +9,10 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.modify']
+JOB_KEYWORDS=['workday', 'codesignal', 'recruiting', 'applying', 'online assessment', 'interview']
 BASE_DIR = 'credentials/'
 companies = list
+queries = list()
 
 def readEmails():
     """Shows basic usage of the Gmail API.
@@ -35,14 +37,13 @@ def readEmails():
         with open(BASE_DIR + 'token.json', 'w') as token:
             token.write(creds.to_json())
     try:
-        for company in companies:
-            # TODO: make this companies optional
+        for query in queries:
             # Call the Gmail API
             service = build('gmail', 'v1', credentials=creds)
-            name = f"{company}"
-            results = service.users().messages().list(userId='me', labelIds=['INBOX'], q=f"from:{name}").execute()
+            print(query)
+            results = service.users().messages().list(userId='me', labelIds=['INBOX'], q=query, maxResults=10).execute()
             messages = results.get('messages', [])
-            print ("Count of Messages from ", name , " is ", len(messages))
+            print ("Count of Messages for query ", query , " is ", len(messages))
             if not messages:
                 print('No new messages.')
             else:
@@ -51,10 +52,12 @@ def readEmails():
                     email_data = msg['payload']['headers']
                     for values in email_data:
                         name = values['name']
+                        date = ""
+                        if name == 'Date':
+                            date = values['value']
+                            print("Email date is:", date)
                         if name == 'From':
                             from_name = values['value']
-                            # if is_not_job_email(from_name):
-                            #     continue
                             payload = msg['payload']
                             parts = payload.get('parts')
 
@@ -94,7 +97,7 @@ def readEmails():
 
                                     text = byte_code.decode("utf-8")
                                     text = format_text(text)
-                                    print("This is the message: " + text)
+                                    print("This is the message: " + text + "\n\n\n")
                                 except BaseException as error:
                                     print(error)
                                     pass
@@ -139,7 +142,15 @@ def get_list_of_companies():
     my_file.close()
     return data_into_list
 
+def build_filter_query():
+    companies = get_list_of_companies()
+    for company in companies:
+        query = f"from:{company}"
+        queries.append(query)
+    for keyword in JOB_KEYWORDS:
+        queries.append(keyword)
+
 
 if __name__ == '__main__':
-    companies = get_list_of_companies()
+    build_filter_query()
     readEmails()
