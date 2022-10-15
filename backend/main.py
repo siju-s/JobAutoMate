@@ -6,6 +6,7 @@
 import base64
 import os.path
 
+from bs4 import BeautifulSoup
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -58,7 +59,7 @@ def readEmails():
                     if name == 'From':
                         from_name = values['value']
                         print("From name:" + from_name)
-                        if from_name != "HackHarvard <team@hackharvard.io>":
+                        if from_name != get_from_address():
                             continue
 
                         for part in msg['payload']['parts']:
@@ -67,7 +68,8 @@ def readEmails():
                                 byte_code = base64.urlsafe_b64decode(data)
 
                                 text = byte_code.decode("utf-8")
-                                print("This is the message: " + str(text))
+                                text = format_text(text)
+                                print("This is the message: " + text)
 
                                 # mark the message as read (optional)
                                 msg = service.users().messages().modify(userId='me', id=message['id'],
@@ -78,14 +80,25 @@ def readEmails():
         print(f'An error occurred: {error}')
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+def get_from_address():
+    return "HackHarvard <team@hackharvard.io>"
 
 
-# Press the green button in the gutter to run the script.
+def format_text(text):
+    text = remove_html_tags(text)
+    return remove_extra_spaces(text)
+
+
+def remove_html_tags(text):
+    cleantext = BeautifulSoup(text)
+    return cleantext.text
+
+
+def remove_extra_spaces(text):
+    text = " ".join(text.split())
+    print(text)
+    return text
+
+
 if __name__ == '__main__':
-    # print_hi('PyCharm')
     readEmails()
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
