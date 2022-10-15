@@ -20,7 +20,7 @@ def readEmails():
     """Shows basic usage of the Gmail API.
     """
     build_filter_query()
-    textData = []
+    jobData = []
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -39,94 +39,92 @@ def readEmails():
         # Save the credentials for the next run
         with open(BASE_DIR + 'token.json', 'w') as token:
             token.write(creds.to_json())
-    try:
-        for query in queries:
-            # Call the Gmail API
-            service = build('gmail', 'v1', credentials=creds)
-            print(query)
-            results = service.users().messages().list(userId='me', labelIds=['INBOX'], q=query, maxResults=10).execute()
-            messages = results.get('messages', [])
-            print ("Count of Messages for query ", query , " is ", len(messages))
-            if not messages:
-                print('No new messages.')
-            else:
-                for message in messages:
-                    msg = service.users().messages().get(userId='me', id=message['id']).execute()
-                    email_data = msg['payload']['headers']
-                    for values in email_data:
-                        name = values['name']
-                        date = ""
-                        if name == 'Date':
-                            date = values['value']
-                            print("Email date is:", date)
-                        if name == 'From':
-                            from_name = values['value']
-                            payload = msg['payload']
-                            parts = payload.get('parts')
+    for query in queries:
+        # Call the Gmail API
+        service = build('gmail', 'v1', credentials=creds)
+        print(query)
+        results = service.users().messages().list(userId='me', labelIds=['INBOX'], q=query, maxResults=2).execute()
+        messages = results.get('messages', [])
+        print ("Count of Messages for query ", query , " is ", len(messages))
+        if not messages:
+            print('No new messages.')
+        else:
+            for message in messages:
+                jobDatum = {}
+                msg = service.users().messages().get(userId='me', id=message['id']).execute()
+                email_data = msg['payload']['headers']
+                for values in email_data:
+                    name = values['name']
+                    date = ""
+                    if name == 'Date':
+                        date = values['value']
+                        jobDatum['date'] = date
+                        print("Email date is:", date)
+                    if name == 'From':
+                        from_name = values['value']
+                        payload = msg['payload']
+                        parts = payload.get('parts')
 
-                            if parts is None:
-                                body = payload.get("body")
-                                data = body.get("data")
-                                mimeType = part.get("mimeType")
-                                # with attachment
-                                if mimeType == 'multipart/alternative':
-                                    subparts = part.get('parts')
-                                    for p in subparts:
-                                        body = p.get("body")
-                                        data = body.get("data")
-                                        mimeType = p.get("mimeType")
-                                        if mimeType == 'text/plain':
-                                            byte_code = base64.urlsafe_b64decode(data)
-                                            break
-                                        elif mimeType == 'text/html':
-                                            byte_code = base64.urlsafe_b64decode(data)
-                                            break
-                                    # without attachment
-                                elif mimeType == 'text/plain':
-                                    byte_code = base64.urlsafe_b64decode(data)
-                                else:
-                                    continue
-
-                                text = byte_code.decode("utf-8")
-                                text = format_text(text)
-                                textData.append(text)
-                                print("MESSAGE: " + text)
+                        if parts is None:
+                            body = payload.get("body")
+                            data = body.get("data")
+                            mimeType = part.get("mimeType")
+                            # with attachment
+                            if mimeType == 'multipart/alternative':
+                                subparts = part.get('parts')
+                                for p in subparts:
+                                    body = p.get("body")
+                                    data = body.get("data")
+                                    mimeType = p.get("mimeType")
+                                    if mimeType == 'text/plain':
+                                        byte_code = base64.urlsafe_b64decode(data)
+                                        break
+                                    elif mimeType == 'text/html':
+                                        byte_code = base64.urlsafe_b64decode(data)
+                                        break
+                                # without attachment
+                            elif mimeType == 'text/plain':
+                                byte_code = base64.urlsafe_b64decode(data)
+                            else:
                                 continue
 
-                            for part in parts:
-                                try:
-                                    body = part.get("body")
-                                    data = body.get("data")
-                                    mimeType = part.get("mimeType")
-                                    # with attachment
-                                    if mimeType == 'multipart/alternative':
-                                        subparts = part.get('parts')
-                                        for p in subparts:
-                                            body = p.get("body")
-                                            data = body.get("data")
-                                            mimeType = p.get("mimeType")
-                                            if mimeType == 'text/plain':
-                                                byte_code = base64.urlsafe_b64decode(data)
-                                                break
-                                            elif mimeType == 'text/html':
-                                                byte_code = base64.urlsafe_b64decode(data)
-                                                break
-                                        # without attachment
-                                    elif mimeType == 'text/plain':
-                                        byte_code = base64.urlsafe_b64decode(data)
-                                    else:
-                                        continue
+                            text = byte_code.decode("utf-8")
+                            text = format_text(text)
+                            jobDatum['text'] = text 
+                            print("MESSAGE: " + text)
+                            continue
 
-                                    text = byte_code.decode("utf-8")
-                                    text = format_text(text)
-                                    textData.append(text)
-                                    print("This is the message: " + text + "\n\n\n")
-                                except BaseException as error:
-                                    print(error)
-                                    return []
-    except Exception as error:
-        print(f'An error occurred: {error}')
-    return textData
+                        cumulativeText = ''       
+                        for part in parts:
+                            body = part.get("body")
+                            data = body.get("data")
+                            mimeType = part.get("mimeType")
+                            # with attachment
+                            if mimeType == 'multipart/alternative':
+                                subparts = part.get('parts')
+                                for p in subparts:
+                                    body = p.get("body")
+                                    data = body.get("data")
+                                    mimeType = p.get("mimeType")
+                                    if mimeType == 'text/plain':
+                                        byte_code = base64.urlsafe_b64decode(data)
+                                        break
+                                    elif mimeType == 'text/html':
+                                        byte_code = base64.urlsafe_b64decode(data)
+                                        break
+                                # without attachment
+                            elif mimeType == 'text/plain':
+                                byte_code = base64.urlsafe_b64decode(data)
+                            else:
+                                continue
+
+                            text = byte_code.decode("utf-8")
+                            text = format_text(text)
+                            cumulativeText += text
+                            print("This is the message: " + text + "\n\n\n")
+                        if cumulativeText != '' : jobDatum['text'] = cumulativeText
+                        jobData.append(jobDatum)
+    return extract_job_data_from_text(jobData)
 
 
 def is_not_job_email(mail_from):

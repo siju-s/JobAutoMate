@@ -26,20 +26,11 @@ def transform_text(body):
     return body
 
 def predict_rejection(email):
+    email = transform_text(email)
     x = vectorizer.transform([email])
     prediction = rejection_model.predict(x)
     return category_names[encoder.inverse_transform(prediction)[0]]
 
-def filter_emails(emails):
-    for email in emails:
-        email = transform_text(email)
-        words = email.split(' ')
-        if not is_job_related_email(words):
-            print('Skipping...',words[:7])
-            # TODO: log file
-            print('---------')
-            continue
-        print(predict_rejection(email))
 
 
 
@@ -52,4 +43,3 @@ def uses_job_keywords(words):
 
 nltk.download('stopwords')
 x = 'Congratulations you have been selected for this position!'
-filter_emails([x])

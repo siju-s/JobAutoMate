@@ -6,7 +6,13 @@ class Job:
     companyName: str
     role: str
     deadline: str
-    def __init__(self, companyName, role, deadline):
+    date: str
+    status: str
+    text: str
+    def __init__(self, companyName, role, deadline, date, status, text):
         self.companyName = companyName
         self.role = role
         self.deadline = deadline
+        self.date = date
+        self.status = status
+        self.text = text
