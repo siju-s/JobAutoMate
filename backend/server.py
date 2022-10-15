@@ -10,4 +10,5 @@ app.config["DEBUG"] = True
 def fetch_jobs():
     return readEmails()
 
-app.run()
+if __name__ == '__main__':
+    app.run()
