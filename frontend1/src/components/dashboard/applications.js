@@ -50,14 +50,22 @@ const jobs = [
     imageUrl: '/static/images/jobs/product_5.png',
     role: 'Product Management Intern',
     deadline: subHours(Date.now(), 9)
+  },
+  {
+    id: uuid(),
+    name: 'Squarespace',
+    imageUrl: '/static/images/jobs/product_6.png',
+    role: 'Product Management Intern',
+    deadline: subHours(Date.now(), 9)
   }
 ];
 
-export const LatestProducts = (props) => (
+export const Applications = (props) => (
+  console.log(props),
   <Card {...props}>
     <CardHeader
       subtitle={`${jobs.length} in total`}
-      title="Jobs Applications"
+      title={props.titleToShow}
     />
     <Divider />
     <List>
@@ -78,7 +86,7 @@ export const LatestProducts = (props) => (
           </ListItemAvatar>
           <ListItemText
             primary={product.name}
-            secondary={`Applied on: ${format(product.deadline, "dd-MM-yyyy")}`}
+            secondary={`${format(product.deadline, "dd-MM-yyyy")}`}
           />
           <ListItemText
               secondary={product.role}

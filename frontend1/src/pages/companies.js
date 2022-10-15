@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import { Box, Container, Grid, Pagination } from '@mui/material';
-import { products } from '../__mocks__/products';
+import { companies } from '../__mocks__/companies';
 import { ProductListToolbar } from '../components/product/product-list-toolbar';
 import { ProductCard } from '../components/product/product-card';
 import { DashboardLayout } from '../components/dashboard-layout';
@@ -9,7 +9,7 @@ const Page = () => (
   <>
     <Head>
       <title>
-        Products | Material Kit
+        Companies
       </title>
     </Head>
     <Box
@@ -26,7 +26,7 @@ const Page = () => (
             container
             spacing={3}
           >
-            {products.map((product) => (
+            {companies.map((product) => (
               <Grid
                 item
                 key={product.id}
