@@ -1,4 +1,4 @@
-import { formatDistanceToNow, subHours } from 'date-fns';
+import { formatDistanceToNow, subHours, format, parseISO } from 'date-fns';
 import { v4 as uuid } from 'uuid';
 import {
   Box,
@@ -20,30 +20,35 @@ const jobs = [
     id: uuid(),
     name: 'Dropbox',
     imageUrl: '/static/images/jobs/product_1.png',
+    role: 'Software Engineer Intern',
     deadline: subHours(Date.now(), 2)
   },
   {
     id: uuid(),
     name: 'Medium Corporation',
     imageUrl: '/static/images/jobs/product_2.png',
+    role: 'Software testing Intern',
     deadline: subHours(Date.now(), 2)
   },
   {
     id: uuid(),
     name: 'Slack',
     imageUrl: '/static/images/jobs/product_3.png',
+    role: 'Software Engineer Intern',
     deadline: subHours(Date.now(), 3)
   },
   {
     id: uuid(),
     name: 'Lyft',
     imageUrl: '/static/images/jobs/product_4.png',
+    role: 'Software Testing Intern',
     deadline: subHours(Date.now(), 5)
   },
   {
     id: uuid(),
     name: 'GitHub',
     imageUrl: '/static/images/jobs/product_5.png',
+    role: 'Product Management Intern',
     deadline: subHours(Date.now(), 9)
   }
 ];
@@ -52,7 +57,7 @@ export const LatestProducts = (props) => (
   <Card {...props}>
     <CardHeader
       subtitle={`${jobs.length} in total`}
-      title="Latest Products"
+      title="Jobs Applications"
     />
     <Divider />
     <List>
@@ -73,7 +78,10 @@ export const LatestProducts = (props) => (
           </ListItemAvatar>
           <ListItemText
             primary={product.name}
-            secondary={`Updated ${formatDistanceToNow(product.deadline)}`}
+            secondary={`Applied on: ${format(product.deadline, "dd-MM-yyyy")}`}
+          />
+          <ListItemText
+              secondary={product.role}
           />
           <IconButton
             edge="end"
