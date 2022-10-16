@@ -19,4 +19,4 @@ class Job:
         self.status = status
         self.text = text
         self.location = location
-        self.imageUrl = 'https://logo.clearbit.com/%s.com?size=200&format=png' % self.name
+        self.imageUrl = 'https://logo.clearbit.com/%s.com?size=48&format=png' % self.name
