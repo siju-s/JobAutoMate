@@ -43,7 +43,7 @@ export const Applications = (props) => {
           </ListItemAvatar>
           <ListItemText
             primary={product.name}
-            secondary={`${format(product.deadline, "dd-MM-yyyy")}`}
+            secondary={`${product.deadline}`}
           />
           <ListItemText
               secondary={product.role}

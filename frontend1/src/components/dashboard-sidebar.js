@@ -116,14 +116,6 @@ export const DashboardSidebar = (props) => {
                 >
                   AutoMate
                 </Typography>
-                <Typography
-                  color="neutral.400"
-                  variant="body2"
-                >
-                  Your tier
-                  {' '}
-                  : Premium
-                </Typography>
               </div>
               <SelectorIcon
                 sx={{

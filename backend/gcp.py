@@ -19,16 +19,16 @@ def analyze_text_using_gcp(text_content):
     date = None
     mvp_org = None
     location = None
-
+    print('----------')
     # Loop through entitites returned from the API
     for entity in response.entities:
         # print(u"Representative name for the entity: {}".format(entity.name))
-
+        print(entity)
         # Get entity type, e.g. PERSON, LOCATION, ADDRESS, NUMBER, et al
         # print(u"Entity type: {}".format(language_v1.Entity.Type(entity.type_).name))
         entity_type = language_v1.Entity.Type(entity.type_).name
-        if entity_type == 'ORGANIZATION':
-            org_dict[entity.name] = entity.salience
+        if entity.type_ == 'ORGANIZATION' and mvp_org is None:
+            mvp_org = entity.name.split(' ')[0]
         if entity_type == 'DATE' and 'year' in entity.metadata and 'month' in entity.metadata and 'day' in entity.metadata: 
             date = entity.name
         if entity_type == 'LOCATION':
@@ -57,11 +57,12 @@ def analyze_text_using_gcp(text_content):
     # the language specified in the request or, if not specified,
     # the automatically-detected language.
     # print(u"Language of the text: {}".format(response.language))
-    if len(org_dict) > 0 :
-        d_descending = sorted(org_dict.items(), key=lambda kv: kv[1], reverse=True)[0][0]
-        mvp_org = d_descending
-    return {
+    # if len(org_dict) > 0 :
+    #     d_descending = sorted(org_dict.items(), key=lambda kv: kv[1], reverse=True)[0][0]
+    #     mvp_org = d_descending
+    d = {
         'organization': mvp_org,
         'date': date,
         'location' : location
     }
+    return d

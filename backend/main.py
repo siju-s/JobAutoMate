@@ -13,7 +13,7 @@ from googleapiclient.discovery import build
 from service import extract_job_data_from_text
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.modify']
-JOB_KEYWORDS=['workday', 'codesignal', 'recruiting', 'online assessment', 'interview','hiring','hired']
+JOB_KEYWORDS=['workday', 'codesignal', 'recruiting', 'online assessment', 'interview','hiring','hired','Application','Software']
 # ROLES=['Software Developer', 'Software Developer Intern', 'Software Development Engineer', 'Data Science Intern', 'Software Engineering']
 BASE_DIR = 'credentials/'
 companies = []
@@ -140,7 +140,7 @@ def get_role(text, roles):
         if role in text:
             return role
 
-    return "Default role"
+    return "Default Role"
 
 def is_not_job_email(mail_from):
     for company in companies:
