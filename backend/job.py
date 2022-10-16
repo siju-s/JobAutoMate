@@ -9,6 +9,7 @@ class Job:
     date: str
     status: str
     text: str
+    imageUrl: str
     def __init__(self, name, role, deadline, date, status, text):
         self.name = name
         self.role = role
@@ -16,3 +17,4 @@ class Job:
         self.date = date
         self.status = status
         self.text = text
+        self.imageUrl = 'https://logo.clearbit.com/%s.com?size=200&format=png' % self.name
