@@ -15,4 +15,5 @@ app.config.from_pyfile('settings.py')
 def fetch_jobs():
     return readEmails()
 
-app.run()
+if __name__ == '__main__':
+    app.run()
