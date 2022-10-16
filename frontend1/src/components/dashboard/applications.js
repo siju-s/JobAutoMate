@@ -12,72 +12,19 @@ import {
   ListItemAvatar,
   ListItemText
 } from '@mui/material';
-import ArrowRightIcon from '@mui/icons-material/ArrowRight';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 
-const jobs = [
-  {
-    id: uuid(),
-    name: 'Dropbox',
-    imageUrl: '/static/images/jobs/product_1.png',
-    role: 'Software Engineer Intern',
-    deadline: subHours(Date.now(), 2),
-    status: 'APPLIED'
-  },
-  {
-    id: uuid(),
-    name: 'Medium Corporation',
-    imageUrl: '/static/images/jobs/product_2.png',
-    role: 'Software testing Intern',
-    deadline: subHours(Date.now(), 2),
-    status: 'APPLIED'
-  },
-  {
-    id: uuid(),
-    name: 'Slack',
-    imageUrl: '/static/images/jobs/product_3.png',
-    role: 'Software Engineer Intern',
-    deadline: subHours(Date.now(), 3),
-    status: 'OA'
-  },
-  {
-    id: uuid(),
-    name: 'Lyft',
-    imageUrl: '/static/images/jobs/product_4.png',
-    role: 'Software Testing Intern',
-    deadline: subHours(Date.now(), 5),
-    status: 'INTERVIEW'
-  },
-  {
-    id: uuid(),
-    name: 'GitHub',
-    imageUrl: '/static/images/jobs/product_5.png',
-    role: 'Product Management Intern',
-    deadline: subHours(Date.now(), 9),
-    status: 'OFFER'
-  },
-  {
-    id: uuid(),
-    name: 'Squarespace',
-    imageUrl: '/static/images/jobs/product_6.png',
-    role: 'Product Management Intern',
-    deadline: subHours(Date.now(), 9),
-    status: 'REJECTED'
-  }
-];
-
-export const Applications = (props) => (
-  console.log(props),
-  <Card {...props}>
+export const Applications = (props) => {
+  if (props.jobs === []) return (<></>)
+  else return (<Card {...props}>
     <CardHeader
-      subtitle={`${jobs.length} in total`}
+      subtitle={`${props.jobs.length} in total`}
       title={props.titleToShow}
     />
     <Divider />
     <List>
-      {jobs.filter(product => props.status.includes(product.status)).map((product, i) =>
+      {props.jobs.filter(product => props.status.includes(product.status)).map((product, i) =>
         (<ListItem
-          divider={i < jobs.length - 1}
+          divider={i < props.jobs.length - 1}
           key={product.id}
         >
           <ListItemAvatar>
@@ -88,11 +35,15 @@ export const Applications = (props) => (
                 height: 48,
                 width: 48
               }}
+              onError={({ currentTarget }) => {
+                currentTarget.onerror = null;
+                currentTarget.src = '/static/images/jobs/product_2.png';
+              }}
             />
           </ListItemAvatar>
           <ListItemText
             primary={product.name}
-            secondary={`${format(product.deadline, "dd-MM-yyyy")}`}
+            secondary={`${product.deadline}`}
           />
           <ListItemText
               secondary={product.role}
@@ -124,4 +75,5 @@ export const Applications = (props) => (
       </Button>
     </Box> */}
   </Card>
-);
+)
+};
