@@ -13,15 +13,15 @@ from googleapiclient.discovery import build
 from service import extract_job_data_from_text
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.modify']
-JOB_KEYWORDS=['workday', 'codesignal', 'recruiting', 'online assessment', 'interview','hiring','hired','Application','Software']
+JOB_KEYWORDS=['workday', 'codesignal','online assessment','hiring','hired']
 # ROLES=['Software Developer', 'Software Developer Intern', 'Software Development Engineer', 'Data Science Intern', 'Software Engineering']
 BASE_DIR = 'credentials/'
 companies = []
 queries = list()
 
 def readEmails():
-    build_filter_query()
     roles = get_list_of_roles()
+    build_filter_query(roles)
     jobData = []
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
@@ -45,7 +45,7 @@ def readEmails():
         query_string = ' '.join(queries)
         # Call the Gmail API
         service = build('gmail', 'v1', credentials=creds)
-        print(query_string)
+        # print(query_string)
         results = service.users().messages().list(userId='me', labelIds=['INBOX'], q=query_string, maxResults=30).execute()
         messages = results.get('messages', [])
         print ("Count of Messages for query is ", len(messages))
@@ -192,7 +192,7 @@ def get_list_of_roles():
     my_file.close()
     return role_data
 
-def build_filter_query():
+def build_filter_query(roles):
     companies = get_list_of_companies()
     queries.append('{')
     for i in range(len(companies)):
@@ -200,14 +200,27 @@ def build_filter_query():
         query = f"from:{company}"
         if i != 0 and i != len(JOB_KEYWORDS) - 1: query += " "
         queries.append(query)
-    queries.append(' }')
+    queries.append('}')
     queries.append(' OR ')
     queries.append('{')
     for i in range(len(JOB_KEYWORDS)):
-        keyword = JOB_KEYWORDS[i]
+        keyword = "\""
+        keyword += JOB_KEYWORDS[i]
+        keyword += "\""
+
         if i != 0 and i != len(JOB_KEYWORDS) - 1: keyword += " "
         queries.append(keyword)
     queries.append('}')
+    # queries.append(' OR ')
+    # # queries.append('{')
+    # print(queries)
+    # for i in range(len(roles)):
+    #     keyword += "\""
+    #     keyword += roles[i]
+    #     keyword += "\""
+    #     if i != 0 and i != len(roles) - 1: keyword += " OR "
+    #     queries.append(keyword)
+    # queries.append('}')
 
 
 # def get_role_name(text):
