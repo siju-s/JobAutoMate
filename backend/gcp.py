@@ -1,7 +1,8 @@
+from re import M
 from google.cloud import language_v1
 
 from settings import GOOGLE_APPLICATION_CREDENTIALS
-from collections import Counter
+from collections import Counter, OrderedDict
 
 def analyze_text_using_gcp(text_content):
 
@@ -14,8 +15,9 @@ def analyze_text_using_gcp(text_content):
     document = {"content": text_content, "type_": type_, "language": language}
     encoding_type = language_v1.EncodingType.UTF8
     response = client.analyze_entities(request = {'document': document, 'encoding_type': encoding_type})
-    organizations_counter = Counter()
+    org_dict = {}
     date = None
+    mvp_org = None
 
     # Loop through entitites returned from the API
     for entity in response.entities:
@@ -25,7 +27,7 @@ def analyze_text_using_gcp(text_content):
         # print(u"Entity type: {}".format(language_v1.Entity.Type(entity.type_).name))
         entity_type = language_v1.Entity.Type(entity.type_).name
         if entity_type == 'ORGANIZATION':
-            organizations_counter[entity.name] += 1
+            org_dict[entity.name] = entity.salience
         if entity_type == 'DATE':
             date = entity.name
         # Get the salience score associated with the entity in the [0, 1.0] range
@@ -52,8 +54,10 @@ def analyze_text_using_gcp(text_content):
     # the language specified in the request or, if not specified,
     # the automatically-detected language.
     # print(u"Language of the text: {}".format(response.language))
-    most_common_organization = max(organizations_counter, key=organizations_counter.get)
+    if len(org_dict) > 0 :
+        d_descending = sorted(org_dict.items(), key=lambda kv: kv[1], reverse=True)[0][0]
+        mvp_org = d_descending
     return {
-        'organization': most_common_organization,
+        'organization': mvp_org,
         'date': date
     }
