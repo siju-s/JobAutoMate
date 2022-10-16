@@ -21,7 +21,7 @@ def extract_job_data_from_text(jobData):
     return json.dumps([ob.__dict__ for ob in lst])
 
 def get_status_for_job(text, rejection_status):
-    if rejection_status is 'Rejected': return rejection_status # early exit
+    if rejection_status is 'Rejected': return 'REJECTED' # early exit
     offer_keywords = {'offer'} # need to decide if this can have negative conotation
     test_keywords = {'oa','assessment','hackerrank','codesignal'}
     interview = {'zoom','interview','phone-screen','phonescreen'}
@@ -29,4 +29,4 @@ def get_status_for_job(text, rejection_status):
         if word in offer_keywords: return 'OFFER'
         if word in test_keywords: return 'OA'
         if word in interview: return 'INTERVIEW'
-    return 'Not Rejected'
+    return 'APPLIED'
