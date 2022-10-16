@@ -13,7 +13,7 @@ from googleapiclient.discovery import build
 from service import extract_job_data_from_text
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.modify']
-JOB_KEYWORDS=['workday', 'codesignal', 'recruiting', 'online assessment', 'interview']
+JOB_KEYWORDS=['workday', 'codesignal', 'recruiting', 'online assessment', 'interview','hiring','hired']
 # ROLES=['Software Developer', 'Software Developer Intern', 'Software Development Engineer', 'Data Science Intern', 'Software Engineering']
 BASE_DIR = 'credentials/'
 companies = []
