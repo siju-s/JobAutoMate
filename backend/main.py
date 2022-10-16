@@ -1,4 +1,3 @@
-
 import base64
 import os.path
 import re
@@ -14,7 +13,7 @@ from googleapiclient.discovery import build
 from service import extract_job_data_from_text
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.modify']
-JOB_KEYWORDS=['workday', 'codesignal', 'recruiting', 'applying', 'online assessment', 'interview']
+JOB_KEYWORDS=['workday', 'codesignal', 'recruiting', 'online assessment', 'interview']
 # ROLES=['Software Developer', 'Software Developer Intern', 'Software Development Engineer', 'Data Science Intern', 'Software Engineering']
 BASE_DIR = 'credentials/'
 companies = []
@@ -43,80 +42,80 @@ def readEmails():
         with open(BASE_DIR + 'token.json', 'w') as token:
             token.write(creds.to_json())
     try:
-        for query in queries:
-            # Call the Gmail API
-            service = build('gmail', 'v1', credentials=creds)
-            print(query)
-            results = service.users().messages().list(userId='me', labelIds=['INBOX'], q=query, maxResults=1).execute()
-            messages = results.get('messages', [])
-            print ("Count of Messages for query ", query , " is ", len(messages))
-            if not messages:
-                print('No new messages.')
-            else:
-                for message in messages:
-                    jobDatum = {}
-                    msg = service.users().messages().get(userId='me', id=message['id']).execute()
-                    email_data = msg['payload']['headers']
-                    for values in email_data:
-                        name = values['name']
-                        date = ""
-                        if name == 'Date':
-                            date = values['value']
-                            jobDatum['date'] = date
-                            print("Email date is:", date)
-                        if name == 'From':
-                            from_name = values['value']
-                            payload = msg['payload']
-                            parts = payload.get('parts')
+        query_string = ' '.join(queries)
+        # Call the Gmail API
+        service = build('gmail', 'v1', credentials=creds)
+        print(query_string)
+        results = service.users().messages().list(userId='me', labelIds=['INBOX'], q=query_string, maxResults=30).execute()
+        messages = results.get('messages', [])
+        print ("Count of Messages for query is ", len(messages))
+        if not messages:
+            print('No new messages.')
+        else:
+            for message in messages:
+                jobDatum = {}
+                msg = service.users().messages().get(userId='me', id=message['id']).execute()
+                email_data = msg['payload']['headers']
+                for values in email_data:
+                    name = values['name']
+                    date = ""
+                    if name == 'Date':
+                        date = values['value']
+                        jobDatum['date'] = date
+                        # print("Email date is:", date)
+                    if name == 'From':
+                        from_name = values['value']
+                        payload = msg['payload']
+                        parts = payload.get('parts')
 
-                            if parts is None:
-                                body = payload.get("body")
+                        if parts is None:
+                            body = payload.get("body")
+                            data = body.get("data")
+                            byte_code = base64.urlsafe_b64decode(data)
+
+                            text = byte_code.decode("utf-8")
+                            text = format_text(text)
+                            jobDatum['text'] = text
+                            jobDatum['role'] = get_role(text, roles)
+                            # print("MESSAGE: " + text)
+                            continue
+
+                        cumulativeText = ''
+
+                        for part in parts:
+                            try:
+                                body = part.get("body")
                                 data = body.get("data")
-                                byte_code = base64.urlsafe_b64decode(data)
+                                mimeType = part.get("mimeType")
+                                # with attachment
+                                if mimeType == 'multipart/alternative':
+                                    subparts = part.get('parts')
+                                    for p in subparts:
+                                        body = p.get("body")
+                                        data = body.get("data")
+                                        mimeType = p.get("mimeType")
+                                        if mimeType == 'text/plain':
+                                            byte_code = base64.urlsafe_b64decode(data)
+                                            break
+                                        elif mimeType == 'text/html':
+                                            byte_code = base64.urlsafe_b64decode(data)
+                                            break
+                                    # without attachment
+                                elif mimeType == 'text/plain':
+                                    byte_code = base64.urlsafe_b64decode(data)
+                                else:
+                                    continue
 
                                 text = byte_code.decode("utf-8")
                                 text = format_text(text)
-                                jobDatum['text'] = text
+                                cumulativeText += text
                                 jobDatum['role'] = get_role(text, roles)
-                                # print("MESSAGE: " + text)
-                                continue
-
-                            cumulativeText = ''
-
-                            for part in parts:
-                                try:
-                                    body = part.get("body")
-                                    data = body.get("data")
-                                    mimeType = part.get("mimeType")
-                                    # with attachment
-                                    if mimeType == 'multipart/alternative':
-                                        subparts = part.get('parts')
-                                        for p in subparts:
-                                            body = p.get("body")
-                                            data = body.get("data")
-                                            mimeType = p.get("mimeType")
-                                            if mimeType == 'text/plain':
-                                                byte_code = base64.urlsafe_b64decode(data)
-                                                break
-                                            elif mimeType == 'text/html':
-                                                byte_code = base64.urlsafe_b64decode(data)
-                                                break
-                                        # without attachment
-                                    elif mimeType == 'text/plain':
-                                        byte_code = base64.urlsafe_b64decode(data)
-                                    else:
-                                        continue
-
-                                    text = byte_code.decode("utf-8")
-                                    text = format_text(text)
-                                    cumulativeText += text
-                                    jobDatum['role'] = get_role(text, roles)
-                                    # print("This is the message: " + text + "\n\n\n")
-                                    if cumulativeText != '': jobDatum['text'] = cumulativeText
-                                    jobData.append(jobDatum)
-                                except BaseException as error:
-                                    print(error)
-                                    pass
+                                # print("This is the message: " + text + "\n\n\n")
+                                if cumulativeText != '': jobDatum['text'] = cumulativeText
+                                jobData.append(jobDatum)
+                            except BaseException as error:
+                                print(error)
+                                pass
     except Exception as error:
         print(f'An error occurred: {error}')
         return []
@@ -131,13 +130,13 @@ def get_assessment_date(text):
     data = re.search(r'\d{2}-\d{2}-\d{4}', text)
     res = datetime.strptime(data.group(), '%Y-%m-%d').date()
     # printing result
-    print("Computed date : " + str(res))
+    # print("Computed date : " + str(res))
 
 def get_role(text, roles):
     for role in roles:
         role = role.lstrip()
         data = role.split(" ")
-        print(role)
+        # print(role)
         if role in text:
             return role
 
@@ -176,7 +175,7 @@ def get_list_of_companies():
     # replacing end splitting the text
     # when newline ('\n') is seen.
     data_into_list = data.split("\n")
-    print(data_into_list)
+    # print(data_into_list)
     my_file.close()
     return data_into_list
 
@@ -189,17 +188,26 @@ def get_list_of_roles():
     # replacing end splitting the text
     # when newline ('\n') is seen.
     role_data = data.split("\n")
-    print(role_data)
+    # print(role_data)
     my_file.close()
     return role_data
 
 def build_filter_query():
     companies = get_list_of_companies()
-    for company in companies:
+    queries.append('{')
+    for i in range(len(companies)):
+        company = companies[i]
         query = f"from:{company}"
+        if i != 0 and i != len(JOB_KEYWORDS) - 1: query += " "
         queries.append(query)
-    for keyword in JOB_KEYWORDS:
+    queries.append(' }')
+    queries.append(' OR ')
+    queries.append('{')
+    for i in range(len(JOB_KEYWORDS)):
+        keyword = JOB_KEYWORDS[i]
+        if i != 0 and i != len(JOB_KEYWORDS) - 1: keyword += " "
         queries.append(keyword)
+    queries.append('}')
 
 
 # def get_role_name(text):
