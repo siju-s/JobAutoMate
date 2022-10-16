@@ -26,7 +26,6 @@ def transform_text(body):
     return body
 
 def predict_rejection(email):
-    email = transform_text(email)
     x = vectorizer.transform([email])
     prediction = rejection_model.predict(x)
     return category_names[encoder.inverse_transform(prediction)[0]]
