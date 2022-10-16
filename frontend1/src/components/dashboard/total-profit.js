@@ -21,7 +21,7 @@ export const TotalProfit = (props) => (
             color="textPrimary"
             variant="h4"
           >
-            35
+            {props.total}
           </Typography>
         </Grid>
         <Grid item>

@@ -12,9 +12,10 @@ import { DashboardLayout } from '../components/dashboard-layout';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
-import { formatDistanceToNow, subHours, format, parseISO } from 'date-fns';
-import { v4 as uuid } from 'uuid';
-
+const getLength = (jobs, status) => {
+  const res = jobs.filter(product => status.includes(product.status));
+  return res.length;
+}
 
 const Page = () => {
   const [jobs, setJobs] = useState([])
@@ -55,7 +56,7 @@ const Page = () => {
             xl={3}
             xs={12}
           >
-            <Budget />
+            <Budget total={getLength(jobs, ["APPLIED", "OA", "INTERVIEW", "OFFER", "REJECTED"])}/>
           </Grid>
           <Grid
             item
@@ -64,7 +65,7 @@ const Page = () => {
             sm={6}
             xs={12}
           >
-            <TotalCustomers />
+            <TotalCustomers total={getLength(jobs, ["OFFER"])}/>
           </Grid>
           <Grid
             item
@@ -73,7 +74,7 @@ const Page = () => {
             sm={6}
             xs={12}
           >
-            <TasksProgress />
+            <TasksProgress total={getLength(jobs, ["OA", "INTERVIEW"])}/>
           </Grid>
           <Grid
             item
@@ -82,7 +83,7 @@ const Page = () => {
             sm={6}
             xs={12}
           >
-            <TotalProfit sx={{ height: '100%' }} />
+            <TotalProfit sx={{ height: '100%' }} total={getLength(jobs, ["REJECTED"])}/>
           </Grid>
           <Grid
             item
