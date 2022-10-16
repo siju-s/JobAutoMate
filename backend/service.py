@@ -13,7 +13,7 @@ def extract_job_data_from_text(jobData):
         status = get_status_for_job(transformed_text,predict_rejection(transformed_text))
         gcp_data = analyze_text_using_gcp(text)
         role = jobDatum["role"]
-        location = jobDatum["location"] if 'location' in jobDatum else None
+        location = gcp_data["location"] if 'location' in jobDatum else None
         deadline = gcp_data['date'] if 'date' in gcp_data else jobDatum['date']
         company = gcp_data['organization'] if 'organization' in gcp_data else 'Mysterious Company' # default company name :D 
         # image_url = 
