@@ -72,7 +72,7 @@ const Page = () => (
             xl={3}
             xs={12}
           >
-            <Applications sx={{ height: '100%' }} titleToShow="Applied jobs" />
+            <Applications sx={{ height: '100%' }} titleToShow="Applied jobs" status={['APPLIED']} />
           </Grid>
           <Grid
             item
@@ -81,7 +81,7 @@ const Page = () => (
             xl={3}
             xs={12}
           >
-            <Applications sx={{ height: '100%' }} titleToShow="Online Assessments" />
+            <Applications sx={{ height: '100%' }} titleToShow="Online Assessments" status={["OA"]}/>
           </Grid>
           <Grid
             item
@@ -90,7 +90,7 @@ const Page = () => (
             xl={3}
             xs={12}
           >
-            <Applications sx={{ height: '100%' }} titleToShow="Interviews" />
+            <Applications sx={{ height: '100%' }} titleToShow="Interviews" status={["INTERVIEW"]} />
           </Grid>
           <Grid
             item
@@ -99,7 +99,7 @@ const Page = () => (
             xl={3}
             xs={12}
           >
-            <Applications sx={{ height: '100%'}} titleToShow="Offer/Rejections" />
+            <Applications sx={{ height: '100%'}} titleToShow="Offer/Rejections" status={["OFFER", "REJECTED"]}/>
           </Grid>
 
         </Grid>

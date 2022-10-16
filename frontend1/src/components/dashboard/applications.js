@@ -21,42 +21,48 @@ const jobs = [
     name: 'Dropbox',
     imageUrl: '/static/images/jobs/product_1.png',
     role: 'Software Engineer Intern',
-    deadline: subHours(Date.now(), 2)
+    deadline: subHours(Date.now(), 2),
+    status: 'APPLIED'
   },
   {
     id: uuid(),
     name: 'Medium Corporation',
     imageUrl: '/static/images/jobs/product_2.png',
     role: 'Software testing Intern',
-    deadline: subHours(Date.now(), 2)
+    deadline: subHours(Date.now(), 2),
+    status: 'APPLIED'
   },
   {
     id: uuid(),
     name: 'Slack',
     imageUrl: '/static/images/jobs/product_3.png',
     role: 'Software Engineer Intern',
-    deadline: subHours(Date.now(), 3)
+    deadline: subHours(Date.now(), 3),
+    status: 'OA'
   },
   {
     id: uuid(),
     name: 'Lyft',
     imageUrl: '/static/images/jobs/product_4.png',
     role: 'Software Testing Intern',
-    deadline: subHours(Date.now(), 5)
+    deadline: subHours(Date.now(), 5),
+    status: 'INTERVIEW'
   },
   {
     id: uuid(),
     name: 'GitHub',
     imageUrl: '/static/images/jobs/product_5.png',
     role: 'Product Management Intern',
-    deadline: subHours(Date.now(), 9)
+    deadline: subHours(Date.now(), 9),
+    status: 'OFFER'
   },
   {
     id: uuid(),
     name: 'Squarespace',
     imageUrl: '/static/images/jobs/product_6.png',
     role: 'Product Management Intern',
-    deadline: subHours(Date.now(), 9)
+    deadline: subHours(Date.now(), 9),
+    status: 'REJECTED'
   }
 ];
 
@@ -69,8 +75,8 @@ export const Applications = (props) => (
     />
     <Divider />
     <List>
-      {jobs.map((product, i) => (
-        <ListItem
+      {jobs.filter(product => props.status.includes(product.status)).map((product, i) =>
+        (<ListItem
           divider={i < jobs.length - 1}
           key={product.id}
         >
@@ -95,12 +101,12 @@ export const Applications = (props) => (
             edge="end"
             size="small"
           >
-            <MoreVertIcon />
           </IconButton>
         </ListItem>
-      ))}
+        )
+      )}
     </List>
-    <Divider />
+    {/* <Divider />
     <Box
       sx={{
         display: 'flex',
@@ -116,6 +122,6 @@ export const Applications = (props) => (
       >
         View all
       </Button>
-    </Box>
+    </Box> */}
   </Card>
 );
