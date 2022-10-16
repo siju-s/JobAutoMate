@@ -9,9 +9,28 @@ import { TotalCustomers } from '../components/dashboard/total-customers';
 import { TotalProfit } from '../components/dashboard/total-profit';
 import { TrafficByDevice } from '../components/dashboard/traffic-by-device';
 import { DashboardLayout } from '../components/dashboard-layout';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 
-const Page = () => (
-  <>
+import { formatDistanceToNow, subHours, format, parseISO } from 'date-fns';
+import { v4 as uuid } from 'uuid';
+
+
+const Page = () => {
+  const [jobs, setJobs] = useState([])
+
+  const fetchData = async () => {
+    axios.get("http://localhost:5000/jobs").then((response) => {
+      console.log("Sh" + response)
+      setJobs(response.data)
+    }).catch(error =>  console.error("Error " + error));
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, [])
+
+  return (<>
     <Head>
       <title>
         Dashboard
@@ -72,7 +91,7 @@ const Page = () => (
             xl={3}
             xs={12}
           >
-            <Applications sx={{ height: '100%' }} titleToShow="Applied jobs" status={['APPLIED']} />
+            <Applications sx={{ height: '100%' }} titleToShow="Applied jobs" jobs={jobs} status={['APPLIED']} />
           </Grid>
           <Grid
             item
@@ -81,7 +100,7 @@ const Page = () => (
             xl={3}
             xs={12}
           >
-            <Applications sx={{ height: '100%' }} titleToShow="Online Assessments" status={["OA"]}/>
+            <Applications sx={{ height: '100%' }} titleToShow="Online Assessments" jobs={jobs} status={["OA"]}/>
           </Grid>
           <Grid
             item
@@ -90,7 +109,7 @@ const Page = () => (
             xl={3}
             xs={12}
           >
-            <Applications sx={{ height: '100%' }} titleToShow="Interviews" status={["INTERVIEW"]} />
+            <Applications sx={{ height: '100%' }} titleToShow="Interviews" jobs={jobs} status={["INTERVIEW"]} />
           </Grid>
           <Grid
             item
@@ -99,14 +118,14 @@ const Page = () => (
             xl={3}
             xs={12}
           >
-            <Applications sx={{ height: '100%'}} titleToShow="Offer/Rejections" status={["OFFER", "REJECTED"]}/>
+            <Applications sx={{ height: '100%'}} titleToShow="Offer/Rejections" jobs={jobs} status={["OFFER", "REJECTED"]}/>
           </Grid>
 
         </Grid>
       </Container>
     </Box>
   </>
-);
+)};
 
 Page.getLayout = (page) => (
   <DashboardLayout>
