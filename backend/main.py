@@ -2,6 +2,8 @@
 import base64
 import os.path
 import re
+from datetime import datetime
+from difflib import SequenceMatcher
 
 from bs4 import BeautifulSoup
 from google.auth.transport.requests import Request
@@ -13,13 +15,14 @@ from service import extract_job_data_from_text
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.modify']
 JOB_KEYWORDS=['workday', 'codesignal', 'recruiting', 'applying', 'online assessment', 'interview']
-ROLES=['Software Developer', 'Software Developer Intern', 'Software Development Engineer', 'Data Science Intern', 'Software Engineering']
+# ROLES=['Software Developer', 'Software Developer Intern', 'Software Development Engineer', 'Data Science Intern', 'Software Engineering']
 BASE_DIR = 'credentials/'
 companies = []
 queries = list()
 
 def readEmails():
     build_filter_query()
+    roles = get_list_of_roles()
     jobData = []
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
@@ -74,7 +77,7 @@ def readEmails():
                                 text = byte_code.decode("utf-8")
                                 text = format_text(text)
                                 jobDatum['text'] = text
-                                jobDatum['role'] = get_role(text)
+                                jobDatum['role'] = get_role(text, roles)
                                 # print("MESSAGE: " + text)
                                 continue
 
@@ -107,7 +110,7 @@ def readEmails():
                                     text = byte_code.decode("utf-8")
                                     text = format_text(text)
                                     cumulativeText += text
-                                    jobDatum['role'] = get_role(text)
+                                    jobDatum['role'] = get_role(text, roles)
                                     # print("This is the message: " + text + "\n\n\n")
                                     if cumulativeText != '': jobDatum['text'] = cumulativeText
                                     jobData.append(jobDatum)
@@ -125,13 +128,17 @@ def isOnlineAssessment(text):
     return "assessment" in text
 
 def get_assessment_date(text):
-    data = re.split('(\d+)', text)
-    print(data)
+    data = re.search(r'\d{2}-\d{2}-\d{4}', text)
+    res = datetime.strptime(data.group(), '%Y-%m-%d').date()
+    # printing result
+    print("Computed date : " + str(res))
 
-def get_role(text):
-    for role in ROLES:
+def get_role(text, roles):
+    for role in roles:
+        role = role.lstrip()
+        data = role.split(" ")
+        print(role)
         if role in text:
-            print("Searching for role ", role, "in " ,text)
             return role
 
     return "Default role"
@@ -157,7 +164,7 @@ def remove_html_tags(text):
 
 def remove_extra_spaces(text):
     text = " ".join(text.split())
-    print(text)
+    # print(text)
     return text
 
 def get_list_of_companies():
@@ -173,6 +180,19 @@ def get_list_of_companies():
     my_file.close()
     return data_into_list
 
+def get_list_of_roles():
+
+    my_file = open("roles.txt", "r")
+
+    data = my_file.read()
+
+    # replacing end splitting the text
+    # when newline ('\n') is seen.
+    role_data = data.split("\n")
+    print(role_data)
+    my_file.close()
+    return role_data
+
 def build_filter_query():
     companies = get_list_of_companies()
     for company in companies:
@@ -180,12 +200,22 @@ def build_filter_query():
         queries.append(query)
     for keyword in JOB_KEYWORDS:
         queries.append(keyword)
+
+
+# def get_role_name(text):
+#     for role in roles:
+#         if role in text:
+#             return role
+#     return "Role not found"
+
+def is_similar(a, b):
+    return SequenceMatcher(None, a, b).ratio()
 #
 #
 # if __name__ == '__main__':
 #     build_filter_query()
 #     readEmails()
 
-# if __name__ == '__main__':
-#     text = "Thank you for your interest in Amazon; we are thrilled you are interested in building the future with us! We have reviewed your application for the Software Development Engineer Internship - 2023 (US) position and invite you to complete the first step in our interview process, the online assessment. You will receive an email invitation from ‘SDE Intern Assessment at Amazon (noreply@panpowered.com)’ containing instructions and a link for the online assessment today, 08/29/2022. Please be sure to check your spam folder for the email if it does not appear in your traditional inbox folder.  The deadline to complete the online assessment is fourteen calendar days from today (by 11:59 PM PT on 09/12/2022)."
-#     get_assessment_date(text)
+if __name__ == '__main__':
+    text = "Thank you for your interest in Amazon; we are thrilled you are interested in building the future with us! We have reviewed your application for the Software Development Engineer Internship - 2023 (US) position and invite you to complete the first step in our interview process, the online assessment. You will receive an email invitation from ‘SDE Intern Assessment at Amazon (noreply@panpowered.com)’ containing instructions and a link for the online assessment today, 08/29/2022. Please be sure to check your spam folder for the email if it does not appear in your traditional inbox folder.  The deadline to complete the online assessment is fourteen calendar days from today (by 11:59 PM PT on 09/12/2022)."
+    get_assessment_date(text)
