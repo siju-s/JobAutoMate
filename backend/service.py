@@ -15,7 +15,7 @@ def extract_job_data_from_text(jobData):
         role = jobDatum["role"]
         deadline = gcp_data['date'] if 'date' in gcp_data else jobDatum['date']
         company = gcp_data['organization'] if 'organization' in gcp_data else 'Mysterious Company' # default company name :D 
-        image_url = 
+        # image_url = 
         j = Job(date=jobDatum['date'],status=status,name=company,role=role,deadline=deadline,text=' '.join(text.split(' ')[:10]))
         lst.append(j)
     return json.dumps([ob.__dict__ for ob in lst])
