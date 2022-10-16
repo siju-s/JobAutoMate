@@ -23,11 +23,6 @@ const items = [
     title: 'Dashboard'
   },
   {
-    href: '/customers',
-    icon: (<UsersIcon fontSize="small" />),
-    title: 'Customers'
-  },
-  {
     href: '/companies',
     icon: (<ShoppingBagIcon fontSize="small" />),
     title: 'Companies'
@@ -52,11 +47,6 @@ const items = [
     icon: (<UserAddIcon fontSize="small" />),
     title: 'Register'
   },
-  {
-    href: '/404',
-    icon: (<XCircleIcon fontSize="small" />),
-    title: 'Error'
-  }
 ];
 
 export const DashboardSidebar = (props) => {
