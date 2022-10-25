@@ -20,3 +20,9 @@ class Job:
         self.text = text
         self.location = location
         self.imageUrl = 'https://logo.clearbit.com/%s.com?size=48&format=png' % self.name
+
+    def __eq__(self, other):
+        return self.name == other.name and self.role == other.role
+
+    def __hash__(self):
+        return hash((self.name, self.role))
