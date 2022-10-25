@@ -12,6 +12,81 @@ import { DashboardLayout } from '../components/dashboard-layout';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
+import { formatDistanceToNow, subHours, format, parseISO } from 'date-fns';
+import { v4 as uuid } from 'uuid';
+import {
+  Button,
+  Card,
+  CardHeader,
+  Divider,
+  IconButton,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText
+} from '@mui/material';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+
+// const jobs = [
+//   {
+//     id: uuid(),
+//     name: 'Dropbox',
+//     imageUrl: '/static/images/jobs/product_1.png',
+//     role: 'Software Engineer Intern',
+//     deadline: subHours(Date.now(), 2),
+//     status: 'APPLIED'
+//   },
+//   {
+//     id: uuid(),
+//     name: 'Medium Corporation',
+//     imageUrl: '/static/images/jobs/product_2.png',
+//     role: 'Software testing Intern',
+//     deadline: subHours(Date.now(), 2),
+//     status: 'APPLIED'
+//   },
+//   {
+//     id: uuid(),
+//     name: 'Slack',
+//     imageUrl: '/static/images/jobs/product_3.png',
+//     role: 'Software Engineer Intern',
+//     deadline: subHours(Date.now(), 3),
+//     status: 'OA'
+//   },
+//   {
+//     id: uuid(),
+//     name: 'Lyft',
+//     imageUrl: '/static/images/jobs/product_4.png',
+//     role: 'Software Testing Intern',
+//     deadline: subHours(Date.now(), 5),
+//     status: 'INTERVIEW'
+//   },
+//   {
+//     id: uuid(),
+//     name: 'GitHub',
+//     imageUrl: '/static/images/jobs/product_5.png',
+//     role: 'Product Management Intern',
+//     deadline: subHours(Date.now(), 9),
+//     status: 'OFFER'
+//   },
+//   {
+//     id: uuid(),
+//     name: 'Squarespace',
+//     imageUrl: '/static/images/jobs/product_6.png',
+//     role: 'Product Management Intern',
+//     deadline: subHours(Date.now(), 9),
+//     status: 'REJECTED'
+//   },
+//       {
+//     id: uuid(),
+//     name: 'Google',
+//     imageUrl: 'https://logo.clearbit.com/google.com?size=48&format=png',
+//     role: 'Software Testing Intern',
+//     deadline: subHours(Date.now(), 9),
+//     status: 'OA'
+//   }
+// ];
+
 const getLength = (jobs, status) => {
   const res = jobs.filter(product => status.includes(product.status));
   return res.length;
@@ -21,7 +96,7 @@ const Page = () => {
   const [jobs, setJobs] = useState([])
 
   const fetchData = async () => {
-    axios.get("http://localhost:5000/jobs").then((response) => {
+    axios.get("http://127.0.0.1:5000/jobs").then((response) => {
       console.log("Sh" + response)
       setJobs(response.data)
     }).catch(error =>  console.error("Error " + error));
