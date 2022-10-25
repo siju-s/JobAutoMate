@@ -46,12 +46,28 @@ def get_status_for_job(text, rejection_status):
     offer_keywords = {'offer'}  # need to decide if this can have negative conotation
     test_keywords = {'oa', 'assessment', 'hackerrank', 'codesignal'}
     interview = {'zoom', 'interview', 'phone-screen', 'phonescreen'}
-    for word in text.split(' '):
-        if word in offer_keywords: return 'OFFER'
-        if word in test_keywords: return 'OA'
-        if word in interview: return 'INTERVIEW'
-    return 'APPLIED'
 
+    is_oa_round = False
+    is_interview_round = False
+    is_offer = False
+
+
+    for word in text.split(' '):
+        if word in test_keywords:
+            is_oa_round = True
+        if word in interview:
+            is_interview_round = True
+        if word in offer_keywords:
+            is_offer = True
+
+    if is_oa_round:
+        return "OA"
+    elif is_interview_round:
+        return "INTERVIEW"
+    elif is_offer:
+        return "OFFER"
+    else:
+        return "APPLIED"
 
 def filter_jobs(jobs):
     return list(set(jobs))

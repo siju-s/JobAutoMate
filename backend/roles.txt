@@ -69,4 +69,6 @@
  Game Tester
  Engineering Internship
  Software Engineer Program – Summer Internship
+ Software Development Engineer Internship
+ Software Development Engineer
  Software Engineer
